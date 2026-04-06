@@ -1,33 +1,32 @@
--- Script adaptado para Delta Executor no celular
+-- Script adaptado para Delta Executor no celular (VERSÃO CORRIGIDA)
 local tela = Instance.new("ScreenGui")
 local frame = Instance.new("Frame")
 local botaoAuto = Instance.new("TextButton")
 local statusLabel = Instance.new("TextLabel")
 local fecharBtn = Instance.new("TextButton")
 local titulo = Instance.new("TextLabel")
+local debugBtn = Instance.new("TextButton") -- Botão pra debug
 
 tela.Parent = game.CoreGui
 tela.Name = "AutoFarmGUI"
 
--- Frame (sem Draggable no mobile pra evitar bugs)
+-- Frame
 frame.Parent = tela
-frame.Size = UDim2.new(0, 260, 0, 160)
-frame.Position = UDim2.new(0.5, -130, 0.7, 0)
+frame.Size = UDim2.new(0, 280, 0, 200)
+frame.Position = UDim2.new(0.5, -140, 0.7, 0)
 frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 frame.BackgroundTransparency = 0.3
--- frame.Active = true  -- comentado
--- frame.Draggable = true  -- desativado no mobile
 
 -- Título
 titulo.Parent = frame
 titulo.Size = UDim2.new(1, -40, 0, 35)
 titulo.Position = UDim2.new(0, 0, 0, 0)
-titulo.Text = "⚔️ AUTO FARM ⚔️"
+titulo.Text = "⚔️ AUTO FARM V2 ⚔️"
 titulo.TextColor3 = Color3.fromRGB(255, 215, 0)
 titulo.BackgroundTransparency = 1
 titulo.TextSize = 16
 
--- Botão Fechar (X)
+-- Botão Fechar
 fecharBtn.Parent = frame
 fecharBtn.Size = UDim2.new(0, 40, 0, 30)
 fecharBtn.Position = UDim2.new(1, -42, 0, 2)
@@ -39,21 +38,30 @@ fecharBtn.BorderSizePixel = 0
 
 -- Status
 statusLabel.Parent = frame
-statusLabel.Size = UDim2.new(0, 240, 0, 30)
-statusLabel.Position = UDim2.new(0.5, -120, 0, 40)
+statusLabel.Size = UDim2.new(0, 260, 0, 30)
+statusLabel.Position = UDim2.new(0.5, -130, 0, 40)
 statusLabel.Text = "📱 Status: Parado"
 statusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 statusLabel.BackgroundTransparency = 1
-statusLabel.TextSize = 13
+statusLabel.TextSize = 12
 
 -- Botão liga/desliga
 botaoAuto.Parent = frame
-botaoAuto.Size = UDim2.new(0, 200, 0, 50)
-botaoAuto.Position = UDim2.new(0.5, -100, 0, 80)
+botaoAuto.Size = UDim2.new(0, 200, 0, 45)
+botaoAuto.Position = UDim2.new(0.5, -100, 0, 75)
 botaoAuto.Text = "🔴 DESLIGADO"
 botaoAuto.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 botaoAuto.TextColor3 = Color3.fromRGB(255, 255, 255)
-botaoAuto.TextSize = 15
+botaoAuto.TextSize = 14
+
+-- Botão Debug (mostra botões encontrados)
+debugBtn.Parent = frame
+debugBtn.Size = UDim2.new(0, 200, 0, 30)
+debugBtn.Position = UDim2.new(0.5, -100, 0, 125)
+debugBtn.Text = "🐛 DEBUG (Listar Botões)"
+debugBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+debugBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+debugBtn.TextSize = 12
 
 -- Fechar
 fecharBtn.MouseButton1Click:Connect(function()
@@ -64,23 +72,36 @@ end)
 local ativado = false
 local player = game.Players.LocalPlayer
 
--- Função para clicar no M1 (mais simples)
-local function atacarM1()
+-- FUNÇÃO DEBUG: Lista todos os botões da tela
+debugBtn.MouseButton1Click:Connect(function()
+    print("========== BOTÕES ENCONTRADOS ==========")
+    local cont = 0
     for _, botao in ipairs(player.PlayerGui:GetDescendants()) do
-        if botao:IsA("TextButton") and (botao.Text == "M1" or botao.Name == "M1") then
-            botao:Click()
-            return true
+        if botao:IsA("TextButton") then
+            cont = cont + 1
+            print(cont .. " - Texto: '" .. botao.Text .. "' | Nome: " .. botao.Name)
         end
     end
-    return false
-end
+    if cont == 0 then
+        print("❌ Nenhum botão TextButton encontrado!")
+    end
+    print("=========================================")
+    statusLabel.Text = "🐛 Debug: " .. cont .. " botões listados (ver F9)"
+end)
 
--- Função para encontrar e clicar no despertar
-local function clicarDespertar()
+-- FUNÇÃO UNIVERSAL DE ATAQUE
+local function atacarM1()
     for _, botao in ipairs(player.PlayerGui:GetDescendants()) do
         if botao:IsA("TextButton") then
             local texto = (botao.Text or ""):lower()
-            if texto:find("despertar") or texto:find("awaken") or texto:find("rage") then
+            local nome = (botao.Name or ""):lower()
+            
+            -- Lista de palavras pra ataque (qualquer jogo)
+            if texto:find("m1") or texto:find("ataque") or texto:find("attack") or 
+               texto:find("soco") or texto:find("punho") or texto:find("hit") or
+               texto:find("bater") or texto:find("fight") or texto:find("lutar") or
+               nome:find("m1") or nome:find("ataque") or nome:find("attack") or
+               nome:find("soco") or nome:find("hit") then
                 botao:Click()
                 return true
             end
@@ -89,10 +110,30 @@ local function clicarDespertar()
     return false
 end
 
--- Função pra achar a barra vermelha
+-- FUNÇÃO UNIVERSAL DE DESPERTAR
+local function clicarDespertar()
+    for _, botao in ipairs(player.PlayerGui:GetDescendants()) do
+        if botao:IsA("TextButton") then
+            local texto = (botao.Text or ""):lower()
+            local nome = (botao.Name or ""):lower()
+            
+            -- Lista de palavras pra despertar
+            if texto:find("despertar") or texto:find("awaken") or texto:find("rage") or
+               texto:find("ult") or texto:find("desbloquear") or texto:find("transform") or
+               texto:find("ativar") or texto:find("poder") or texto:find("especial") or
+               nome:find("despertar") or nome:find("awaken") or nome:find("rage") then
+                botao:Click()
+                return true
+            end
+        end
+    end
+    return false
+end
+
+-- FUNÇÃO DA BARRA DE DESPERTAR
 local function valorBarraDespertar()
+    -- Procura por texto com porcentagem
     for _, obj in ipairs(player.PlayerGui:GetDescendants()) do
-        -- Procura por texto com porcentagem ex: "85%"
         if obj:IsA("TextLabel") or obj:IsA("TextButton") then
             local texto = obj.Text or ""
             local percentual = texto:match("(%d+)%%")
@@ -102,7 +143,13 @@ local function valorBarraDespertar()
         end
         -- Procura por barra vermelha (Frame)
         if obj:IsA("Frame") and obj.BackgroundColor3.R > 0.7 then
-            -- Tenta pegar o tamanho da barra
+            local escala = obj.Size.X.Scale
+            if escala > 0 then
+                return math.floor(escala * 100)
+            end
+        end
+        -- Procura por ImageLabel vermelha
+        if obj:IsA("ImageLabel") and obj.BackgroundColor3.R > 0.7 then
             local escala = obj.Size.X.Scale
             if escala > 0 then
                 return math.floor(escala * 100)
@@ -112,15 +159,16 @@ local function valorBarraDespertar()
     return 0
 end
 
--- Loop principal
+-- LOOP PRINCIPAL
 local function iniciarFarm()
+    local semAtaque = 0
     while ativado do
-        -- 1. Atacar M1
-        atacarM1()
+        -- 1. Tentar atacar
+        local atacou = atacarM1()
         
         -- 2. Verificar despertar
         local valor = valorBarraDespertar()
-        statusLabel.Text = "📊 Despertar: " .. valor .. "%"
+        statusLabel.Text = "📊 Despertar: " .. valor .. "% | Ataque: " .. (atacou and "✓" or "✗")
         
         if valor >= 100 then
             statusLabel.Text = "⚡ DESPERTANDO!"
@@ -128,11 +176,22 @@ local function iniciarFarm()
             task.wait(1)
         end
         
-        task.wait(0.2) -- ataque rápido
+        -- Se não atacou por 10 vezes seguidas, mostra aviso
+        if not atacou then
+            semAtaque = semAtaque + 1
+            if semAtaque >= 10 then
+                statusLabel.Text = "⚠️ Não achou botão de ataque! Use DEBUG"
+                semAtaque = 0
+            end
+        else
+            semAtaque = 0
+        end
+        
+        task.wait(0.2)
     end
 end
 
--- Botão liga/desliga
+-- BOTÃO LIGA/DESLIGA
 botaoAuto.MouseButton1Click:Connect(function()
     ativado = not ativado
     if ativado then
@@ -147,5 +206,5 @@ botaoAuto.MouseButton1Click:Connect(function()
     end
 end)
 
-print("✅ Script Delta Mobile carregado!")
-print("📱 Auto M1 + Despertar Automático")
+print("✅ Script Delta Mobile V2 carregado!")
+print("📱 Auto M1 + Despertar + Debug")
