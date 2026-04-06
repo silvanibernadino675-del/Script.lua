@@ -1,28 +1,27 @@
--- AUTO ATTACK SIMPLES - Delta Mobile
--- Apenas ataque automático, com GUI arrastável e minimizável
+-- AUTO FARM M1 - CELULAR (Delta Mobile)
+-- Mostra os botões encontrados direto na tela
 
 local player = game.Players.LocalPlayer
 local ativado = false
 local minimizado = false
+local botaoM1Encontrado = nil
 
 -- Criar GUI principal
 local tela = Instance.new("ScreenGui")
-tela.Name = "AutoAttackGUI"
+tela.Name = "AutoFarmM1"
 tela.Parent = game.CoreGui
 tela.ResetOnSpawn = false
 
--- Frame principal (arrastável)
+-- Frame principal
 local frame = Instance.new("Frame")
 frame.Parent = tela
-frame.Size = UDim2.new(0, 140, 0, 70)
-frame.Position = UDim2.new(0.5, -70, 0.8, 0)
+frame.Size = UDim2.new(0, 200, 0, 150)
+frame.Position = UDim2.new(0.5, -100, 0.7, 0)
 frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-frame.BackgroundTransparency = 0.2
-frame.BorderSizePixel = 0
+frame.BackgroundTransparency = 0.3
 frame.Active = true
 frame.Draggable = true
 
--- Cantos arredondados (opcional)
 local corner = Instance.new("UICorner")
 corner.Parent = frame
 corner.CornerRadius = UDim.new(0, 10)
@@ -30,8 +29,8 @@ corner.CornerRadius = UDim.new(0, 10)
 -- Botão liga/desliga
 local botao = Instance.new("TextButton")
 botao.Parent = frame
-botao.Size = UDim2.new(0, 80, 0, 40)
-botao.Position = UDim2.new(0.5, -40, 0.5, -20)
+botao.Size = UDim2.new(0, 100, 0, 45)
+botao.Position = UDim2.new(0.5, -50, 0.25, -22)
 botao.Text = "🔴 OFF"
 botao.TextColor3 = Color3.fromRGB(255, 255, 255)
 botao.TextSize = 14
@@ -42,7 +41,7 @@ local botaoCorner = Instance.new("UICorner")
 botaoCorner.Parent = botao
 botaoCorner.CornerRadius = UDim.new(0, 8)
 
--- Botão minimizar (X)
+-- Botão minimizar
 local btnMinimizar = Instance.new("TextButton")
 btnMinimizar.Parent = frame
 btnMinimizar.Size = UDim2.new(0, 25, 0, 25)
@@ -57,96 +56,191 @@ local miniCorner = Instance.new("UICorner")
 miniCorner.Parent = btnMinimizar
 miniCorner.CornerRadius = UDim.new(0, 5)
 
--- Label de status
+-- Status
 local status = Instance.new("TextLabel")
 status.Parent = frame
-status.Size = UDim2.new(1, 0, 0, 15)
-status.Position = UDim2.new(0, 0, 1, -18)
-status.Text = "⚔️ Parado"
-status.TextColor3 = Color3.fromRGB(200, 200, 200)
-status.TextSize = 10
+status.Size = UDim2.new(1, 0, 0, 30)
+status.Position = UDim2.new(0, 0, 0.45, 0)
+status.Text = "🔍 Procurando M1..."
+status.TextColor3 = Color3.fromRGB(255, 255, 0)
+status.TextSize = 12
 status.BackgroundTransparency = 1
 
--- FUNÇÃO DE ATAQUE (procura qualquer botão de ataque)
-local function atacar()
-    for _, botao in ipairs(player.PlayerGui:GetDescendants()) do
-        if botao:IsA("TextButton") then
-            local texto = (botao.Text or ""):lower()
-            local nome = (botao.Name or ""):lower()
-            
-            -- Palavras que indicam botão de ataque
-            if texto:find("m1") or texto:find("ataque") or texto:find("attack") or
-               texto:find("soco") or texto:find("hit") or texto:find("fight") or
-               nome:find("m1") or nome:find("ataque") or nome:find("attack") then
-                botao:Click()
-                return true
+-- Label para mostrar resultado do debug
+local debugResultado = Instance.new("TextLabel")
+debugResultado.Parent = frame
+debugResultado.Size = UDim2.new(1, 0, 0, 50)
+debugResultado.Position = UDim2.new(0, 0, 0.65, 0)
+debugResultado.Text = ""
+debugResultado.TextColor3 = Color3.fromRGB(200, 200, 200)
+debugResultado.TextSize = 10
+debugResultado.BackgroundTransparency = 1
+debugResultado.TextWrapped = true
+
+-- Botão debug
+local debugBtn = Instance.new("TextButton")
+debugBtn.Parent = frame
+debugBtn.Size = UDim2.new(0, 100, 0, 25)
+debugBtn.Position = UDim2.new(0.5, -50, 0.85, 0)
+debugBtn.Text = "🐛 LISTAR BOTÕES"
+debugBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+debugBtn.TextSize = 11
+debugBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+debugBtn.BorderSizePixel = 0
+
+local debugCorner = Instance.new("UICorner")
+debugCorner.Parent = debugBtn
+debugCorner.CornerRadius = UDim.new(0, 5)
+
+-- FUNÇÃO PARA ENCONTRAR O BOTÃO M1
+local function encontrarBotaoM1()
+    local locais = {player.PlayerGui, game.CoreGui}
+    
+    for _, gui in ipairs(locais) do
+        if gui then
+            for _, obj in ipairs(gui:GetDescendants()) do
+                if obj:IsA("TextButton") or obj:IsA("ImageButton") then
+                    local texto = (obj.Text or ""):upper()
+                    local nome = (obj.Name or ""):upper()
+                    
+                    if texto:find("M1") or nome:find("M1") or texto == "M1" or nome == "M1" then
+                        return obj
+                    end
+                end
             end
         end
     end
-    return false
+    return nil
+end
+
+-- FUNÇÃO DEBUG QUE MOSTRA NA TELA
+local function debugNaTela()
+    local botoesEncontrados = {}
+    local locais = {player.PlayerGui, game.CoreGui}
+    
+    for _, gui in ipairs(locais) do
+        if gui then
+            for _, obj in ipairs(gui:GetDescendants()) do
+                if obj:IsA("TextButton") or obj:IsA("ImageButton") then
+                    local texto = obj.Text or "SEM TEXTO"
+                    if #texto > 15 then texto = texto:sub(1, 12) .. "..." end
+                    table.insert(botoesEncontrados, "• " .. obj.Name .. " [" .. texto .. "]")
+                end
+            end
+        end
+    end
+    
+    if #botoesEncontrados == 0 then
+        debugResultado.Text = "❌ NENHUM BOTÃO ENCONTRADO!\nO jogo pode usar clique na tela."
+    else
+        local texto = "🔍 BOTÕES ENCONTRADOS (" .. #botoesEncontrados .. "):\n"
+        for i = 1, math.min(4, #botoesEncontrados) do
+            texto = texto .. botoesEncontrados[i] .. "\n"
+        end
+        if #botoesEncontrados > 4 then
+            texto = texto .. "... e mais " .. (#botoesEncontrados - 4) .. " botões"
+        end
+        debugResultado.Text = texto
+    end
+    
+    -- Reseta a mensagem depois de 5 segundos
+    task.wait(5)
+    if not ativado then
+        debugResultado.Text = ""
+    end
+end
+
+-- FUNÇÃO PARA CLICAR NO M1
+local function clicarM1()
+    if not botaoM1Encontrado then
+        botaoM1Encontrado = encontrarBotaoM1()
+        if botaoM1Encontrado then
+            status.Text = "✅ M1 encontrado!"
+            status.TextColor3 = Color3.fromRGB(0, 255, 0)
+            debugResultado.Text = "🎯 Botão M1: " .. botaoM1Encontrado.Name
+            task.wait(2)
+            debugResultado.Text = ""
+        else
+            status.Text = "❌ M1 não encontrado!"
+            status.TextColor3 = Color3.fromRGB(255, 0, 0)
+            return false
+        end
+    end
+    
+    local sucesso = pcall(function()
+        botaoM1Encontrado:Click()
+    end)
+    
+    return sucesso
 end
 
 -- LOOP PRINCIPAL
 local function loopAtaque()
-    local falhas = 0
     while ativado do
-        local atacou = atacar()
+        local atacou = clicarM1()
         
         if atacou then
-            status.Text = "⚔️ Atacando..."
-            falhas = 0
+            status.Text = "⚔️ ATACANDO!"
+            status.TextColor3 = Color3.fromRGB(0, 255, 0)
         else
-            falhas = falhas + 1
-            if falhas >= 15 then
-                status.Text = "⚠️ Nenhum botão encontrado!"
-            else
-                status.Text = "🔍 Procurando..."
-            end
+            status.Text = "⚠️ Falhou..."
+            status.TextColor3 = Color3.fromRGB(255, 255, 0)
+            botaoM1Encontrado = nil
+            task.wait(0.5)
         end
         
-        wait(0.15)  -- 0.15 segundos entre ataques
+        task.wait(0.15)
     end
 end
 
--- BOTÃO LIGA/DESLIGA
+-- BOTÃO LIGAR/DESLIGAR
 botao.MouseButton1Click:Connect(function()
     ativado = not ativado
     if ativado then
         botao.Text = "🟢 ON"
         botao.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-        status.Text = "⚔️ Atacando..."
-        spawn(loopAtaque)
+        status.Text = "🔍 Procurando M1..."
+        status.TextColor3 = Color3.fromRGB(255, 255, 0)
+        botaoM1Encontrado = encontrarBotaoM1()
+        if botaoM1Encontrado then
+            status.Text = "✅ M1 pronto!"
+            status.TextColor3 = Color3.fromRGB(0, 255, 0)
+        end
+        task.spawn(loopAtaque)
     else
         botao.Text = "🔴 OFF"
         botao.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-        status.Text = "⚔️ Parado"
+        status.Text = "⏹️ Desligado"
+        status.TextColor3 = Color3.fromRGB(255, 255, 255)
+        debugResultado.Text = ""
     end
 end)
 
--- MINIMIZAR (esconde o botão e fica só o X)
-local frameOriginalSize = frame.Size
-local botaoOriginalVisible = true
+-- BOTÃO DEBUG
+debugBtn.MouseButton1Click:Connect(function()
+    debugNaTela()
+end)
 
+-- MINIMIZAR
 btnMinimizar.MouseButton1Click:Connect(function()
     minimizado = not minimizado
-    
     if minimizado then
-        -- Modo minimizado: só mostra o X
-        frame.Size = UDim2.new(0, 40, 0, 40)
+        frame.Size = UDim2.new(0, 45, 0, 45)
         botao.Visible = false
         status.Visible = false
-        btnMinimizar.Text = "□"  -- ícone de expandir
+        debugBtn.Visible = false
+        debugResultado.Visible = false
+        btnMinimizar.Text = "□"
         btnMinimizar.Position = UDim2.new(0.5, -12, 0.5, -12)
-        btnMinimizar.Size = UDim2.new(0, 25, 0, 25)
     else
-        -- Modo normal
-        frame.Size = UDim2.new(0, 140, 0, 70)
+        frame.Size = UDim2.new(0, 200, 0, 150)
         botao.Visible = true
         status.Visible = true
+        debugBtn.Visible = true
+        debugResultado.Visible = true
         btnMinimizar.Text = "✖"
         btnMinimizar.Position = UDim2.new(1, -30, 0, 5)
-        btnMinimizar.Size = UDim2.new(0, 25, 0, 25)
     end
 end)
 
-print("✅ Auto Attack carregado! Arraste o painel para mover.")
+print("✅ Script M1 para CELULAR carregado!")
